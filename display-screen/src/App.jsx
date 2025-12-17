@@ -23,6 +23,13 @@ function App() {
       setParticipantCount(data.count);
     });
 
+    socketService.on("display_connected", (data) => {
+      console.log("📺 Display connected with game state:", data.gameState);
+      setParticipantCount(data.participantCount);
+      // Stay on waiting screen when first connecting
+      // Game flow events will update the screen as needed
+    });
+
     socketService.on("current_question", (data) => {
       setCurrentQuestion(data.question);
       setScreen("question");
@@ -35,9 +42,14 @@ function App() {
 
     socketService.on("leaderboard_update", (data) => {
       setLeaderboard(data);
-      if (screen !== "question") {
-        setScreen("leaderboard");
-      }
+      setScreen((currentScreen) => {
+        // Only switch to leaderboard if currently showing a question (after it ends)
+        // Don't switch if on waiting screen or game ended screen
+        if (currentScreen === "question") {
+          return "leaderboard";
+        }
+        return currentScreen;
+      });
     });
 
     socketService.on("new_question", (data) => {
@@ -46,11 +58,13 @@ function App() {
     });
 
     socketService.on("game_ended", (data) => {
+      console.log("🏁 Game ended, showing final leaderboard");
       setLeaderboard(data.leaderboard);
       setScreen("gameEnded");
 
       // After 1 minute, return to waiting screen
       setTimeout(() => {
+        console.log("⏰ Timeout reached, returning to waiting screen");
         setScreen("waiting");
         setLeaderboard(null);
         setCurrentQuestion(null);
@@ -82,6 +96,22 @@ function App() {
       <div className={`connection-indicator ${connectionStatus}`}>
         {connectionStatus === "connected" ? "● LIVE" : "○ OFFLINE"}
       </div>
+
+      <div className="screen-debug">Screen: {screen}</div>
+
+      {(screen === "gameEnded" || screen === "leaderboard") && (
+        <button
+          className="reset-button"
+          onClick={() => {
+            console.log("🔄 Manual reset to waiting screen");
+            setScreen("waiting");
+            setLeaderboard(null);
+            setCurrentQuestion(null);
+          }}
+        >
+          {screen === "gameEnded" ? "Reset to Home Screen" : "Back to Home"}
+        </button>
+      )}
     </div>
   );
 }

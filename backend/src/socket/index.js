@@ -199,9 +199,12 @@ function setupSocketHandlers(io) {
             socket.join('display');
             connectedSockets.set(socket.id, { role: 'display' });
 
-            // Send current leaderboard
-            const leaderboard = gameService.getLeaderboard();
-            socket.emit('leaderboard_update', leaderboard);
+            // Send current game state
+            const gameState = gameService.getGameState();
+            socket.emit('display_connected', {
+                gameState,
+                participantCount: gameService.getParticipantCount()
+            });
 
             console.log('📺 Display screen connected');
         });

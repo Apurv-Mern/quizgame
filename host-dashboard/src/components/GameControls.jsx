@@ -25,7 +25,7 @@ function GameControls({
         <button
           className="control-btn primary large"
           onClick={onStartQuestion}
-          disabled={!canStartNext || isActive}
+          disabled={!canStartNext}
         >
           {currentQuestion === 0 ? "▶️ Start Game" : "▶️ Next Question"}
         </button>
