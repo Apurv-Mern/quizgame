@@ -1,0 +1,159 @@
+.leaderboard-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 1.5rem;
+  max-height: calc(100vh - 3rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.leaderboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.leaderboard-header h3 {
+  font-size: 1.125rem;
+  color: var(--gray-900);
+}
+
+.total-count {
+  font-size: 0.75rem;
+  color: var(--gray-600);
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  background: var(--gray-100);
+  border-radius: 12px;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.leaderboard-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  background: var(--gray-50);
+  border-radius: 8px;
+  transition: all 0.2s;
+  animation: slideIn 0.3s ease-out;
+}
+
+.leaderboard-entry:hover {
+  background: var(--gray-100);
+  transform: translateX(2px);
+}
+
+.rank-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.leaderboard-entry:nth-child(1) .rank-badge {
+  background: #f59e0b;
+}
+
+.leaderboard-entry:nth-child(2) .rank-badge {
+  background: #9ca3af;
+}
+
+.leaderboard-entry:nth-child(3) .rank-badge {
+  background: #d97706;
+}
+
+.player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-name {
+  font-weight: 600;
+  color: var(--gray-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-stats {
+  font-size: 0.75rem;
+  color: var(--gray-600);
+  margin-top: 0.125rem;
+}
+
+.player-score {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--primary);
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.score-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--gray-600);
+}
+
+.rank-change {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.rank-change.up {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.rank-change.down {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--gray-600);
+}
+
+.empty-state p {
+  margin-bottom: 0.5rem;
+}
+
+.empty-hint {
+  font-size: 0.875rem;
+  color: var(--gray-500);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
