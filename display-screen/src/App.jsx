@@ -3,6 +3,7 @@ import socketService from "./services/socket";
 import WaitingScreen from "./components/WaitingScreen";
 import QuestionDisplay from "./components/QuestionDisplay";
 import Leaderboard from "./components/Leaderboard";
+import ShowCorrectAnswer from "./components/ShowCorrectAnswer";
 import "./styles/App.css";
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [leaderboard, setLeaderboard] = useState(null);
   const [participantCount, setParticipantCount] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(null);
 
   useEffect(() => {
     socketService.connect();
@@ -71,6 +73,14 @@ function App() {
       }, 60000); // 60 seconds = 1 minute
     });
 
+    socketService.on("show_correct_answer", (data) => {
+      setShowAnswer({
+        question: data.question,
+        correctAnswer: data.correctAnswer,
+      });
+      setScreen("showAnswer");
+    });
+
     return () => {
       socketService.disconnect();
     };
@@ -90,6 +100,13 @@ function App() {
         <Leaderboard
           data={leaderboard}
           showFinalMessage={screen === "gameEnded"}
+        />
+      )}
+
+      {screen === "showAnswer" && showAnswer && (
+        <ShowCorrectAnswer
+          question={showAnswer.question}
+          correctAnswer={showAnswer.correctAnswer}
         />
       )}
 

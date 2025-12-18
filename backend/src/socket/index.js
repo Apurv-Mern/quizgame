@@ -62,36 +62,67 @@ function setupSocketHandlers(io) {
          * Host starts a question
          */
         socket.on('start_question', ({ questionIndex }) => {
-            const result = gameService.startQuestion(questionIndex, () => {
-                // Question auto-ended callback
-                handleQuestionEnd(io);
-            });
-
-            if (result.success) {
-                // Confirm to host
-                socket.emit('question_started', {
-                    success: true,
-                    questionNumber: result.questionNumber
+            // If there was a previous question, show the correct answer first
+            const prevIndex = questionIndex - 1;
+            if (prevIndex >= 0 && gameService.questions[prevIndex]) {
+                const prevQ = gameService.questions[prevIndex];
+                io.to('display').emit('show_correct_answer', {
+                    question: prevQ.toClientFormat(),
+                    correctAnswer: prevQ.correctAnswer
                 });
-
-                // Broadcast question to all participants
-                io.to('participants').emit('new_question', {
-                    question: result.question,
-                    questionNumber: result.questionNumber,
-                    totalQuestions: result.totalQuestions
-                });
-
-                // Send to display screens with same event name
-                io.to('display').emit('new_question', {
-                    question: result.question,
-                    questionNumber: result.questionNumber,
-                    totalQuestions: result.totalQuestions
-                });
+                // Wait 5 seconds before sending the next question
+                setTimeout(() => {
+                    const result = gameService.startQuestion(questionIndex, () => {
+                        handleQuestionEnd(io);
+                    });
+                    if (result.success) {
+                        socket.emit('question_started', {
+                            success: true,
+                            questionNumber: result.questionNumber
+                        });
+                        io.to('participants').emit('new_question', {
+                            question: result.question,
+                            questionNumber: result.questionNumber,
+                            totalQuestions: result.totalQuestions
+                        });
+                        io.to('display').emit('new_question', {
+                            question: result.question,
+                            questionNumber: result.questionNumber,
+                            totalQuestions: result.totalQuestions
+                        });
+                    } else {
+                        socket.emit('question_started', {
+                            success: false,
+                            error: result.error
+                        });
+                    }
+                }, 5000);
             } else {
-                socket.emit('question_started', {
-                    success: false,
-                    error: result.error
+                // No previous question, just start as normal
+                const result = gameService.startQuestion(questionIndex, () => {
+                    handleQuestionEnd(io);
                 });
+                if (result.success) {
+                    socket.emit('question_started', {
+                        success: true,
+                        questionNumber: result.questionNumber
+                    });
+                    io.to('participants').emit('new_question', {
+                        question: result.question,
+                        questionNumber: result.questionNumber,
+                        totalQuestions: result.totalQuestions
+                    });
+                    io.to('display').emit('new_question', {
+                        question: result.question,
+                        questionNumber: result.questionNumber,
+                        totalQuestions: result.totalQuestions
+                    });
+                } else {
+                    socket.emit('question_started', {
+                        success: false,
+                        error: result.error
+                    });
+                }
             }
         });
 
