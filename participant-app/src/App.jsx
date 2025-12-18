@@ -94,6 +94,20 @@ function App() {
     // Connect to WebSocket server
     socketService.connect();
 
+    // Check for existing session on load
+    const savedSession = sessionStorage.getItem("quiz_participant");
+    if (savedSession) {
+      try {
+        const { nickname, participantId } = JSON.parse(savedSession);
+        console.log("🔄 Attempting to reconnect as:", nickname);
+        // Auto-rejoin with saved credentials
+        socketService.emit("join_game", { nickname, reconnect: true });
+      } catch (error) {
+        console.error("Failed to restore session:", error);
+        sessionStorage.removeItem("quiz_participant");
+      }
+    }
+
     // Setup event listeners
     socketService.on("connection_status", (data) => {
       dispatch({ type: "SET_CONNECTION", payload: data.status });
@@ -101,6 +115,14 @@ function App() {
 
     socketService.on("game_joined", (data) => {
       if (data.success) {
+        // Save session to sessionStorage for reconnection
+        sessionStorage.setItem(
+          "quiz_participant",
+          JSON.stringify({
+            nickname: data.participant.nickname,
+            participantId: data.participant.id,
+          })
+        );
         dispatch({ type: "JOIN_SUCCESS", payload: data });
       } else {
         dispatch({ type: "JOIN_ERROR", payload: data.error });
@@ -128,6 +150,8 @@ function App() {
     });
 
     socketService.on("game_ended", (data) => {
+      // Clear session when game ends
+      sessionStorage.removeItem("quiz_participant");
       dispatch({ type: "GAME_ENDED", payload: data });
     });
 
