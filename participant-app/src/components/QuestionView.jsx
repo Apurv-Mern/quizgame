@@ -11,38 +11,6 @@ function QuestionView({
   onAnswerSelect,
   onAnswerSubmit,
 }) {
-  const [timeRemaining, setTimeRemaining] = useState(question?.timeLimit || 30);
-
-  useEffect(() => {
-    if (!question || answerSubmitted) return;
-
-    const timer = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [question, answerSubmitted]);
-
-  useEffect(() => {
-    if (question) {
-      setTimeRemaining(question.timeLimit);
-    }
-  }, [question]);
-
-  if (!question) return null;
-
-  const getTimerClass = () => {
-    if (timeRemaining <= 10) return "critical";
-    if (timeRemaining <= 20) return "warning";
-    return "normal";
-  };
-
   const getAnswerClass = (optionId) => {
     if (answerSubmitted && selectedAnswer === optionId) {
       if (answerResult?.success) {
@@ -60,13 +28,26 @@ function QuestionView({
     if (!answerSubmitted || selectedAnswer !== optionId) {
       return null;
     }
-
     if (answerResult?.success) {
       return <span className="answer-status">✓ Submitted</span>;
     }
-
     return <span className="answer-status submitting-label">Sending...</span>;
   };
+  const [timeRemaining, setTimeRemaining] = useState(question?.timeLimit || 30);
+
+  const getTimerClass = () => {
+    if (timeRemaining <= 10) return "critical";
+    if (timeRemaining <= 20) return "warning";
+    return "normal";
+  };
+
+  useEffect(() => {
+    if (!question || answerSubmitted) return;
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [question, answerSubmitted]);
 
   return (
     <div className="question-view">
@@ -81,6 +62,15 @@ function QuestionView({
         <div className="question-display-header">
           <div className="globe-icon">🌍</div>
           <h2 className="question-text">{question.text}</h2>
+        </div>
+
+        <div className="clues-section">
+          <div className="clues-label">Clues:</div>
+          <ul className="clues-list">
+            {question.clue1 && <li className="clue-item">{question.clue1}</li>}
+            {question.clue2 && <li className="clue-item">{question.clue2}</li>}
+            {question.clue3 && <li className="clue-item">{question.clue3}</li>}
+          </ul>
         </div>
 
         <div className="options-container">

@@ -55,6 +55,29 @@
   flex-direction: column;
 }
 
+.clues-section {
+  margin: 1.5rem 0 2rem 0;
+  padding: 1rem 1.5rem;
+  background: #f3f4f6;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+.clues-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.clues-list {
+  list-style: disc inside;
+  margin: 0;
+  padding: 0;
+}
+.clue-item {
+  font-size: 1rem;
+  margin-bottom: 0.4em;
+  color: #334155;
+}
+
 .question-display-header {
   display: flex;
   flex-direction: column;
@@ -130,7 +153,11 @@
 
 .option-button.selected {
   border-color: var(--primary);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-light) 100%
+  );
   color: white;
   border-width: 3px;
   font-weight: 600;
@@ -139,7 +166,11 @@
 
 .option-button.submitting {
   border-color: var(--primary);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-light) 100%
+  );
   color: white;
   border-width: 3px;
   opacity: 0.7;
@@ -147,7 +178,11 @@
 
 .option-button.submitted {
   border-color: var(--primary);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-light) 100%
+  );
   color: white;
   border-width: 3px;
   box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
@@ -189,7 +224,7 @@
 }
 
 .submitting-label::before {
-  content: '⟳ ';
+  content: "⟳ ";
   display: inline-block;
   animation: spin 1s linear infinite;
 }
@@ -260,7 +295,7 @@
   .question-text {
     font-size: 1.1rem;
   }
-  
+
   .option-button {
     min-height: 56px;
     font-size: 0.9375rem;

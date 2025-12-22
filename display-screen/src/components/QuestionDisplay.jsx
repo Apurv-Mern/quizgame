@@ -5,8 +5,17 @@ function QuestionDisplay({ question }) {
     <div className="question-display">
       <div className="question-content">
         <div className="question-header">
-          <div className="globe-icon">🌍</div>
-          <h2 className="question-text">{question.text}</h2>
+          <div className="globe-icon">30d</div>
+          <h2 className="question-region">{question.text}</h2>
+        </div>
+
+        <div className="clues-section">
+          <div className="clues-label">Clues:</div>
+          <ul className="clues-list">
+            {question.clue1 && <li className="clue-item">{question.clue1}</li>}
+            {question.clue2 && <li className="clue-item">{question.clue2}</li>}
+            {question.clue3 && <li className="clue-item">{question.clue3}</li>}
+          </ul>
         </div>
 
         <div className="options-grid">

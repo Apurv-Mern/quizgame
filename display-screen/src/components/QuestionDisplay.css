@@ -7,6 +7,30 @@
 }
 
 .question-content {
+  }
+
+  .clues-section {
+    margin: 2rem 0 2.5rem 0;
+    padding: 1rem 2rem;
+    background: rgba(255,255,255,0.15);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .clues-label {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+  }
+  .clues-list {
+    list-style: disc inside;
+    margin: 0;
+    padding: 0;
+  }
+  .clue-item {
+    font-size: 1.15rem;
+    margin-bottom: 0.5em;
+    color: #1e293b;
+  }
   width: 100%;
   max-width: 1200px;
   animation: fadeIn 0.8s ease-out;

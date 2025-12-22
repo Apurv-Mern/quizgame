@@ -1,5 +1,5 @@
 // Static questions with clues for host dashboard
-const staticQuestions = [
+export const staticQuestions = [
     {
         id: 'q1',
         text: 'Europe – Question 1',
@@ -183,81 +183,3 @@ const staticQuestions = [
         correctAnswer: 'b'
     }
 ];
-/**
- * Question Bank
- * Predefined quiz questions about world geography
- */
-
-const Question = require('../models/Question');
-const config = require('../config');
-
-
-/**
- * Load all quiz questions (with clues)
- */
-function loadQuestions() {
-    // Convert staticQuestions to Question objects, including clues
-    return staticQuestions.map(data =>
-        new Question(
-            data.id,
-            data.text,
-            data.options,
-            data.correctAnswer,
-            config.game?.questionTimeLimit || 30,
-            data.clue1,
-            data.clue2,
-            data.clue3
-        )
-    );
-}
-
-/**
- * Get a specific question by ID
- */
-function getQuestionById(questions, questionId) {
-    return questions.find(q => q.id === questionId);
-}
-
-/**
- * Validate question data integrity
- */
-function validateQuestions(questions) {
-    const errors = [];
-
-    questions.forEach((question, index) => {
-        // Check for unique IDs
-        const duplicates = questions.filter(q => q.id === question.id);
-        if (duplicates.length > 1) {
-            errors.push(`Duplicate question ID: ${question.id}`);
-        }
-
-        // Check for valid correct answer
-        const correctOption = question.options.find(opt => opt.id === question.correctAnswer);
-        if (!correctOption) {
-            errors.push(`Question ${question.id}: Invalid correct answer`);
-        }
-
-        // Check for minimum options
-        if (question.options.length < 2) {
-            errors.push(`Question ${question.id}: Need at least 2 options`);
-        }
-
-        // Check for duplicate option IDs
-        const optionIds = question.options.map(opt => opt.id);
-        const uniqueOptionIds = new Set(optionIds);
-        if (optionIds.length !== uniqueOptionIds.size) {
-            errors.push(`Question ${question.id}: Duplicate option IDs`);
-        }
-    });
-
-    return {
-        valid: errors.length === 0,
-        errors
-    };
-}
-
-module.exports = {
-    loadQuestions,
-    getQuestionById,
-    validateQuestions
-};

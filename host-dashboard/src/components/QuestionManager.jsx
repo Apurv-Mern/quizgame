@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import questionsAPI from "../services/questionsAPI";
+import { staticQuestions } from "../data/staticQuestions";
 import "./QuestionManager.css";
 
 function QuestionManager({ onQuestionsUpdate }) {
@@ -11,7 +12,13 @@ function QuestionManager({ onQuestionsUpdate }) {
 
   // Load existing questions or initialize with empty ones
   useEffect(() => {
-    loadQuestions();
+    // If staticQuestions exist, use them for initialization
+    if (staticQuestions && staticQuestions.length > 0) {
+      setQuestions(staticQuestions);
+      setLoading(false);
+    } else {
+      loadQuestions();
+    }
   }, []);
 
   const loadQuestions = async () => {
@@ -34,8 +41,17 @@ function QuestionManager({ onQuestionsUpdate }) {
             ],
             correctAnswer: "a",
             timeLimit: 30,
+            clue1: "",
+            clue2: "",
+            clue3: "",
           });
         }
+        // Ensure clues exist for all loaded questions
+        loadedQuestions.forEach((q) => {
+          q.clue1 = q.clue1 || "";
+          q.clue2 = q.clue2 || "";
+          q.clue3 = q.clue3 || "";
+        });
         setQuestions(loadedQuestions.slice(0, 10));
       } else {
         // Initialize with empty questions
@@ -50,6 +66,9 @@ function QuestionManager({ onQuestionsUpdate }) {
           ],
           correctAnswer: "a",
           timeLimit: 30,
+          clue1: "",
+          clue2: "",
+          clue3: "",
         }));
         setQuestions(initialQuestions);
       }
@@ -67,6 +86,9 @@ function QuestionManager({ onQuestionsUpdate }) {
         ],
         correctAnswer: "a",
         timeLimit: 30,
+        clue1: "",
+        clue2: "",
+        clue3: "",
       }));
       setQuestions(initialQuestions);
     } finally {
@@ -77,6 +99,13 @@ function QuestionManager({ onQuestionsUpdate }) {
   const handleQuestionChange = (index, field, value) => {
     const updated = [...questions];
     updated[index][field] = value;
+    setQuestions(updated);
+    onQuestionsUpdate?.(updated);
+  };
+
+  const handleClueChange = (qIndex, clueNum, value) => {
+    const updated = [...questions];
+    updated[qIndex][`clue${clueNum}`] = value;
     setQuestions(updated);
     onQuestionsUpdate?.(updated);
   };
@@ -98,7 +127,10 @@ function QuestionManager({ onQuestionsUpdate }) {
   const isQuestionComplete = (question) => {
     return (
       question.text.trim() !== "" &&
-      question.options.every((opt) => opt.text.trim() !== "")
+      question.options.every((opt) => opt.text.trim() !== "") &&
+      (question.clue1?.trim() || "") !== "" &&
+      (question.clue2?.trim() || "") !== "" &&
+      (question.clue3?.trim() || "") !== ""
     );
   };
 
@@ -203,6 +235,86 @@ function QuestionManager({ onQuestionsUpdate }) {
                     placeholder="Enter your question here..."
                     rows={3}
                   />
+                </div>
+
+                <div
+                  className="form-group clues-group"
+                  style={{ marginBottom: "1em" }}
+                >
+                  <label
+                    style={{
+                      fontWeight: "bold",
+                      marginBottom: "0.5em",
+                      display: "block",
+                    }}
+                  >
+                    Clues
+                  </label>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.5em",
+                    }}
+                  >
+                    <div>
+                      <span style={{ fontWeight: "500", marginRight: "0.5em" }}>
+                        Clue 1:
+                      </span>
+                      <input
+                        type="text"
+                        value={question.clue1 || ""}
+                        onChange={(e) =>
+                          handleClueChange(index, 1, e.target.value)
+                        }
+                        placeholder="Enter first clue"
+                        style={{
+                          width: "80%",
+                          padding: "6px",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <span style={{ fontWeight: "500", marginRight: "0.5em" }}>
+                        Clue 2:
+                      </span>
+                      <input
+                        type="text"
+                        value={question.clue2 || ""}
+                        onChange={(e) =>
+                          handleClueChange(index, 2, e.target.value)
+                        }
+                        placeholder="Enter second clue"
+                        style={{
+                          width: "80%",
+                          padding: "6px",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <span style={{ fontWeight: "500", marginRight: "0.5em" }}>
+                        Clue 3:
+                      </span>
+                      <input
+                        type="text"
+                        value={question.clue3 || ""}
+                        onChange={(e) =>
+                          handleClueChange(index, 3, e.target.value)
+                        }
+                        placeholder="Enter third clue"
+                        style={{
+                          width: "80%",
+                          padding: "6px",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="form-group">

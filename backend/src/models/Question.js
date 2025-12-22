@@ -4,12 +4,15 @@
  */
 
 class Question {
-    constructor(id, text, options, correctAnswer, timeLimit = 30) {
+    constructor(id, text, options, correctAnswer, timeLimit = 30, clue1 = '', clue2 = '', clue3 = '') {
         this.id = id;
         this.text = text;
         this.options = options; // Array of { id, text }
         this.correctAnswer = correctAnswer; // Option id
         this.timeLimit = timeLimit; // seconds
+        this.clue1 = clue1;
+        this.clue2 = clue2;
+        this.clue3 = clue3;
 
         // State tracking
         this.startedAt = null;
@@ -110,7 +113,10 @@ class Question {
             id: this.id,
             text: this.text,
             options: this.options,
-            timeLimit: this.timeLimit
+            timeLimit: this.timeLimit,
+            clue1: this.clue1,
+            clue2: this.clue2,
+            clue3: this.clue3
         };
     }
 
@@ -123,6 +129,9 @@ class Question {
             text: this.text,
             options: this.options,
             correctAnswer: this.correctAnswer,
+            clue1: this.clue1,
+            clue2: this.clue2,
+            clue3: this.clue3,
             stats: this.getStats()
         };
     }

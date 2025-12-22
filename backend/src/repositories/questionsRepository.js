@@ -23,7 +23,10 @@ class QuestionsRepository {
                 text: q.text,
                 options: q.options,
                 correctAnswer: q.correctAnswer,
-                timeLimit: q.timeLimit
+                timeLimit: q.timeLimit,
+                clue1: q.clue1 || '',
+                clue2: q.clue2 || '',
+                clue3: q.clue3 || ''
             }));
 
             await QuestionModel.bulkCreate(questionData);
@@ -51,7 +54,10 @@ class QuestionsRepository {
                 text: q.text,
                 options: q.options,
                 correctAnswer: q.correctAnswer,
-                timeLimit: q.timeLimit
+                timeLimit: q.timeLimit,
+                clue1: q.clue1 || '',
+                clue2: q.clue2 || '',
+                clue3: q.clue3 || ''
             }));
         } catch (error) {
             console.error('Error loading questions:', error);
@@ -76,7 +82,10 @@ class QuestionsRepository {
                 text: question.text,
                 options: question.options,
                 correctAnswer: question.correctAnswer,
-                timeLimit: question.timeLimit
+                timeLimit: question.timeLimit,
+                clue1: question.clue1 || '',
+                clue2: question.clue2 || '',
+                clue3: question.clue3 || ''
             };
         } catch (error) {
             console.error('Error getting question:', error);

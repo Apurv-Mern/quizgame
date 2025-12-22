@@ -84,6 +84,9 @@ function App() {
 
     socketService.on("host_connected", (data) => {
       dispatch({ type: "HOST_CONNECTED", payload: data });
+      if (!data.gameState || data.gameState.status !== "active") {
+        setCurrentQuestionIndex(0);
+      }
     });
 
     socketService.on("participant_count", (data) => {
@@ -110,6 +113,10 @@ function App() {
       dispatch({ type: "LEADERBOARD_UPDATE", payload: data });
     });
 
+    socketService.on("game_ended", () => {
+      setCurrentQuestionIndex(0);
+    });
+
     return () => {
       socketService.disconnect();
     };
@@ -132,6 +139,7 @@ function App() {
 
   const handleEndGame = () => {
     if (window.confirm("Are you sure you want to end the game?")) {
+      setCurrentQuestionIndex(0); // Instantly reset for UI
       socketService.emit("end_game");
     }
   };
