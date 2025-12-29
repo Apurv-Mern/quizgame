@@ -143,45 +143,45 @@ const staticQuestions = [
         ],
         correctAnswer: 'b'
     },
-    {
-        id: 'q12',
-        text: 'North America – Question 12',
-        clue1: 'This country has the longest coastline in the world.',
-        clue2: 'It is one of the world’s largest producers of uranium.',
-        clue3: 'Its national animal is the beaver.',
-        options: [
-            { id: 'a', text: 'Canada' },
-            { id: 'b', text: 'United States' },
-            { id: 'c', text: 'Mexico' }
-        ],
-        correctAnswer: 'a'
-    },
-    {
-        id: 'q13',
-        text: 'Global – Question 13',
-        clue1: 'This country has the largest sovereign wealth fund in the world.',
-        clue2: 'It is consistently ranked among the happiest nations globally.',
-        clue3: 'Oslo is its capital city.',
-        options: [
-            { id: 'a', text: 'Sweden' },
-            { id: 'b', text: 'Finland' },
-            { id: 'c', text: 'Norway' }
-        ],
-        correctAnswer: 'c'
-    },
-    {
-        id: 'q14',
-        text: 'Global – Question 14',
-        clue1: 'This country operates the world’s busiest international airport by passenger traffic.',
-        clue2: 'It has successfully diversified its economy beyond oil into finance and tourism.',
-        clue3: 'Dubai and Abu Dhabi are located here.',
-        options: [
-            { id: 'a', text: 'Qatar' },
-            { id: 'b', text: 'United Arab Emirates' },
-            { id: 'c', text: 'Saudi Arabia' }
-        ],
-        correctAnswer: 'b'
-    }
+    // {
+    //     id: 'q12',
+    //     text: 'North America – Question 12',
+    //     clue1: 'This country has the longest coastline in the world.',
+    //     clue2: 'It is one of the world’s largest producers of uranium.',
+    //     clue3: 'Its national animal is the beaver.',
+    //     options: [
+    //         { id: 'a', text: 'Canada' },
+    //         { id: 'b', text: 'United States' },
+    //         { id: 'c', text: 'Mexico' }
+    //     ],
+    //     correctAnswer: 'a'
+    // },
+    // {
+    //     id: 'q13',
+    //     text: 'Global – Question 13',
+    //     clue1: 'This country has the largest sovereign wealth fund in the world.',
+    //     clue2: 'It is consistently ranked among the happiest nations globally.',
+    //     clue3: 'Oslo is its capital city.',
+    //     options: [
+    //         { id: 'a', text: 'Sweden' },
+    //         { id: 'b', text: 'Finland' },
+    //         { id: 'c', text: 'Norway' }
+    //     ],
+    //     correctAnswer: 'c'
+    // },
+    // {
+    //     id: 'q14',
+    //     text: 'Global – Question 14',
+    //     clue1: 'This country operates the world’s busiest international airport by passenger traffic.',
+    //     clue2: 'It has successfully diversified its economy beyond oil into finance and tourism.',
+    //     clue3: 'Dubai and Abu Dhabi are located here.',
+    //     options: [
+    //         { id: 'a', text: 'Qatar' },
+    //         { id: 'b', text: 'United Arab Emirates' },
+    //         { id: 'c', text: 'Saudi Arabia' }
+    //     ],
+    //     correctAnswer: 'b'
+    // }
 ];
 /**
  * Question Bank

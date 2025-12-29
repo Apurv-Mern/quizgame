@@ -9,6 +9,7 @@ function QuestionManager({ onQuestionsUpdate }) {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState(null);
+  const [commonTimeLimit, setCommonTimeLimit] = useState(30);
 
   // Load existing questions or initialize with empty ones
   useEffect(() => {
@@ -16,6 +17,11 @@ function QuestionManager({ onQuestionsUpdate }) {
     if (staticQuestions && staticQuestions.length > 0) {
       setQuestions(staticQuestions);
       setLoading(false);
+      // Set initial common timer if all questions have same timeLimit
+      const allSame = staticQuestions.every(
+        (q) => q.timeLimit === staticQuestions[0].timeLimit
+      );
+      setCommonTimeLimit(allSame ? staticQuestions[0].timeLimit : 30);
     } else {
       loadQuestions();
     }
@@ -53,6 +59,11 @@ function QuestionManager({ onQuestionsUpdate }) {
           q.clue3 = q.clue3 || "";
         });
         setQuestions(loadedQuestions.slice(0, 10));
+        // Set initial common timer if all questions have same timeLimit
+        const allSame = loadedQuestions.every(
+          (q) => q.timeLimit === loadedQuestions[0].timeLimit
+        );
+        setCommonTimeLimit(allSame ? loadedQuestions[0].timeLimit : 30);
       } else {
         // Initialize with empty questions
         const initialQuestions = Array.from({ length: 10 }, (_, i) => ({
@@ -71,6 +82,7 @@ function QuestionManager({ onQuestionsUpdate }) {
           clue3: "",
         }));
         setQuestions(initialQuestions);
+        setCommonTimeLimit(30);
       }
     } catch (error) {
       console.error("Failed to load questions:", error);
@@ -91,6 +103,7 @@ function QuestionManager({ onQuestionsUpdate }) {
         clue3: "",
       }));
       setQuestions(initialQuestions);
+      setCommonTimeLimit(30);
     } finally {
       setLoading(false);
     }
@@ -189,8 +202,25 @@ function QuestionManager({ onQuestionsUpdate }) {
       <div className="manager-header">
         <h2>📝 Question Manager</h2>
         <div className="progress-badge">
-          {getCompletedCount()} / 10 Complete
+          {getCompletedCount()} / 14 Complete
         </div>
+      </div>
+
+      {/* Common timer for all questions */}
+      <div className="form-group" style={{ margin: "1em 0" }}>
+        <label style={{ fontWeight: "bold", marginRight: 8 }}>
+          Common Time Limit (seconds):
+        </label>
+        <select
+          value={commonTimeLimit}
+          onChange={(e) => setCommonTimeLimit(Number(e.target.value))}
+          style={{ width: 120 }}
+        >
+          <option value={15}>15 seconds</option>
+          <option value={30}>30 seconds</option>
+          <option value={45}>45 seconds</option>
+          <option value={60}>60 seconds</option>
+        </select>
       </div>
 
       {message && (
@@ -225,18 +255,6 @@ function QuestionManager({ onQuestionsUpdate }) {
 
             {expandedIndex === index && (
               <div className="question-card-body">
-                <div className="form-group">
-                  <label>Question Text</label>
-                  <textarea
-                    value={question.text}
-                    onChange={(e) =>
-                      handleQuestionChange(index, "text", e.target.value)
-                    }
-                    placeholder="Enter your question here..."
-                    rows={3}
-                  />
-                </div>
-
                 <div
                   className="form-group clues-group"
                   style={{ marginBottom: "1em" }}
@@ -264,9 +282,8 @@ function QuestionManager({ onQuestionsUpdate }) {
                       <input
                         type="text"
                         value={question.clue1 || ""}
-                        onChange={(e) =>
-                          handleClueChange(index, 1, e.target.value)
-                        }
+                        readOnly
+                        disabled
                         placeholder="Enter first clue"
                         style={{
                           width: "80%",
@@ -283,9 +300,8 @@ function QuestionManager({ onQuestionsUpdate }) {
                       <input
                         type="text"
                         value={question.clue2 || ""}
-                        onChange={(e) =>
-                          handleClueChange(index, 2, e.target.value)
-                        }
+                        readOnly
+                        disabled
                         placeholder="Enter second clue"
                         style={{
                           width: "80%",
@@ -302,9 +318,8 @@ function QuestionManager({ onQuestionsUpdate }) {
                       <input
                         type="text"
                         value={question.clue3 || ""}
-                        onChange={(e) =>
-                          handleClueChange(index, 3, e.target.value)
-                        }
+                        readOnly
+                        disabled
                         placeholder="Enter third clue"
                         style={{
                           width: "80%",
@@ -328,9 +343,8 @@ function QuestionManager({ onQuestionsUpdate }) {
                         <input
                           type="text"
                           value={option.text}
-                          onChange={(e) =>
-                            handleOptionChange(index, option.id, e.target.value)
-                          }
+                          readOnly
+                          disabled
                           placeholder={`Option ${option.id.toUpperCase()}`}
                         />
                         <label className="radio-label">
@@ -338,13 +352,8 @@ function QuestionManager({ onQuestionsUpdate }) {
                             type="radio"
                             name={`correct-${index}`}
                             checked={question.correctAnswer === option.id}
-                            onChange={() =>
-                              handleQuestionChange(
-                                index,
-                                "correctAnswer",
-                                option.id
-                              )
-                            }
+                            readOnly
+                            disabled
                           />
                           <span className="radio-text">Correct</span>
                         </label>
@@ -355,21 +364,13 @@ function QuestionManager({ onQuestionsUpdate }) {
 
                 <div className="form-group">
                   <label>Time Limit (seconds)</label>
-                  <select
-                    value={question.timeLimit}
-                    onChange={(e) =>
-                      handleQuestionChange(
-                        index,
-                        "timeLimit",
-                        Number(e.target.value)
-                      )
-                    }
-                  >
-                    <option value={15}>15 seconds</option>
-                    <option value={30}>30 seconds</option>
-                    <option value={45}>45 seconds</option>
-                    <option value={60}>60 seconds</option>
-                  </select>
+                  <input
+                    type="text"
+                    value={commonTimeLimit}
+                    readOnly
+                    disabled
+                    style={{ width: 120 }}
+                  />
                 </div>
               </div>
             )}
@@ -377,7 +378,7 @@ function QuestionManager({ onQuestionsUpdate }) {
         ))}
       </div>
 
-      <div className="manager-footer">
+      {/* <div className="manager-footer">
         <button
           className="save-btn"
           disabled={getCompletedCount() === 0 || saving}
@@ -385,7 +386,7 @@ function QuestionManager({ onQuestionsUpdate }) {
         >
           {saving ? "💾 Saving..." : "💾 Save Questions"}
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }
