@@ -13,6 +13,8 @@ function App() {
   const [leaderboard, setLeaderboard] = useState(null);
   const [participantCount, setParticipantCount] = useState(0);
   const [showAnswer, setShowAnswer] = useState(null);
+  const [questionNumber, setQuestionNumber] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(10);
 
   useEffect(() => {
     socketService.connect();
@@ -56,6 +58,8 @@ function App() {
 
     socketService.on("new_question", (data) => {
       setCurrentQuestion(data.question);
+      setQuestionNumber(data.questionNumber);
+      setTotalQuestions(data.totalQuestions);
       setScreen("question");
     });
 
@@ -100,6 +104,8 @@ function App() {
         <Leaderboard
           data={leaderboard}
           showFinalMessage={screen === "gameEnded"}
+          questionNumber={questionNumber}
+          totalQuestions={totalQuestions}
         />
       )}
 

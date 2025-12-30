@@ -189,6 +189,8 @@ class GameService {
         }
 
         this.currentQuestion.end();
+        // Set status to 'waiting' after question ends (before next question starts)
+        this.gameStatus = 'waiting';
 
         if (this.questionTimer) {
             clearTimeout(this.questionTimer);
@@ -373,7 +375,9 @@ class GameService {
             clearTimeout(this.questionTimer);
             this.questionTimer = null;
         }
-        this.gameStatus = 'ended';
+        this.gameStatus = 'waiting';
+        this.currentQuestionIndex = -1;
+        this.currentQuestion = null;
         this.updateLeaderboard();
         console.log('🏁 Game ended');
     }

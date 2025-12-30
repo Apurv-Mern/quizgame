@@ -62,7 +62,7 @@ function setupSocketHandlers(io) {
          * Host starts a question
          */
         socket.on('start_question', ({ questionIndex }) => {
-            // If there was a previous question, show the correct answer first
+            // If there was a previous question, show the correct answer first (but start next question immediately)
             const prevIndex = questionIndex - 1;
             if (prevIndex >= 0 && gameService.questions[prevIndex]) {
                 const prevQ = gameService.questions[prevIndex];
@@ -70,42 +70,62 @@ function setupSocketHandlers(io) {
                     question: prevQ.toClientFormat(),
                     correctAnswer: prevQ.correctAnswer
                 });
-                // Wait 5 seconds before sending the next question
-                setTimeout(() => {
-                    const result = gameService.startQuestion(questionIndex, () => {
-                        handleQuestionEnd(io);
+                // Start the next question immediately (no delay)
+                const result = gameService.startQuestion(questionIndex, () => {
+                    handleQuestionEnd(io);
+                });
+                if (result.success) {
+                    // Get question with correct answer for host
+                    const currentQ = gameService.currentQuestion;
+                    const questionWithAnswer = currentQ ? {
+                        id: currentQ.id,
+                        text: currentQ.text,
+                        options: currentQ.options,
+                        correctAnswer: currentQ.correctAnswer,
+                        timeLimit: currentQ.timeLimit
+                    } : null;
+                    
+                    socket.emit('question_started', {
+                        success: true,
+                        questionNumber: result.questionNumber,
+                        question: questionWithAnswer
                     });
-                    if (result.success) {
-                        socket.emit('question_started', {
-                            success: true,
-                            questionNumber: result.questionNumber
-                        });
-                        io.to('participants').emit('new_question', {
-                            question: result.question,
-                            questionNumber: result.questionNumber,
-                            totalQuestions: result.totalQuestions
-                        });
-                        io.to('display').emit('new_question', {
-                            question: result.question,
-                            questionNumber: result.questionNumber,
-                            totalQuestions: result.totalQuestions
-                        });
-                    } else {
-                        socket.emit('question_started', {
-                            success: false,
-                            error: result.error
-                        });
-                    }
-                }, 5000);
+                    io.to('participants').emit('new_question', {
+                        question: result.question,
+                        questionNumber: result.questionNumber,
+                        totalQuestions: result.totalQuestions
+                    });
+                    io.to('display').emit('new_question', {
+                        question: result.question,
+                        questionNumber: result.questionNumber,
+                        totalQuestions: result.totalQuestions
+                    });
+                } else {
+                    socket.emit('question_started', {
+                        success: false,
+                        error: result.error
+                    });
+                }
             } else {
                 // No previous question, just start as normal
                 const result = gameService.startQuestion(questionIndex, () => {
                     handleQuestionEnd(io);
                 });
                 if (result.success) {
+                    // Get question with correct answer for host
+                    const currentQ = gameService.currentQuestion;
+                    const questionWithAnswer = currentQ ? {
+                        id: currentQ.id,
+                        text: currentQ.text,
+                        options: currentQ.options,
+                        correctAnswer: currentQ.correctAnswer,
+                        timeLimit: currentQ.timeLimit
+                    } : null;
+                    
                     socket.emit('question_started', {
                         success: true,
-                        questionNumber: result.questionNumber
+                        questionNumber: result.questionNumber,
+                        question: questionWithAnswer
                     });
                     io.to('participants').emit('new_question', {
                         question: result.question,
@@ -322,6 +342,51 @@ function setupSocketHandlers(io) {
 
             // Broadcast leaderboard update
             io.emit('leaderboard_update', leaderboard);
+
+            // Auto-start next question after 5 seconds
+            const nextQuestionIndex = gameService.currentQuestionIndex + 1;
+            if (nextQuestionIndex < gameService.questions.length) {
+                setTimeout(() => {
+                    // Check if game is still active (not ended by host)
+                    // After question ends, status is 'waiting', so we check if it's not 'ended'
+                    if (gameService.gameStatus !== 'ended') {
+                        const result = gameService.startQuestion(nextQuestionIndex, () => {
+                            handleQuestionEnd(io);
+                        });
+                        
+                        if (result.success) {
+                            // Get question with correct answer for host
+                            const currentQ = gameService.currentQuestion;
+                            const questionWithAnswer = currentQ ? {
+                                id: currentQ.id,
+                                text: currentQ.text,
+                                options: currentQ.options,
+                                correctAnswer: currentQ.correctAnswer,
+                                timeLimit: currentQ.timeLimit
+                            } : null;
+
+                            // Find host socket and emit
+                            io.to('host').emit('question_started', {
+                                success: true,
+                                questionNumber: result.questionNumber,
+                                question: questionWithAnswer
+                            });
+
+                            io.to('participants').emit('new_question', {
+                                question: result.question,
+                                questionNumber: result.questionNumber,
+                                totalQuestions: result.totalQuestions
+                            });
+
+                            io.to('display').emit('new_question', {
+                                question: result.question,
+                                questionNumber: result.questionNumber,
+                                totalQuestions: result.totalQuestions
+                            });
+                        }
+                    }
+                }, 5000); // 5 second delay
+            }
         }
     }
 

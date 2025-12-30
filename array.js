@@ -246,14 +246,81 @@
 // Input: [1, 2, 3, 4, 5], target = 6
 // Output: (1,5), (2,4)
 
-function uniquePairs(arr, target) {
+// function uniquePairs(arr, target) {
 
-}
+// single loop(first remove the duplicate value, and then check then substract number is in the set and current number is less then the substract number , if yes then that one is the pair)
 
-console.log(uniquePairs([1, 2, 3, 4, 5], 6))
+// const set = new Set(arr)
+// const result = [];
+// for (let num of set) {
+//     const substractedValue = target - num
+//     if (set.has(substractedValue) && num < substractedValue) {
+//         result.push([num, substractedValue])
+//     }
+// }
+// return result
+
+
+// Two loops
+// const result = [];
+// for (let i = 0; i < arr.length; i++) {
+//     for (let j = i + 1; j < arr.length; j++) {
+//         if (arr[i] + arr[j] == target) {
+//             result.push([arr[i], arr[j]])
+//         }
+//     }
+// }
+// return result
+// }
+
+// console.log(uniquePairs([1, 2, 3, 4, 5], 6))
 
 
 
+// 1️⃣1️⃣ Left Shift an Array by One Position
+// Input: [1, 2, 3, 4]
+// Output: [2, 3, 4, 1] ✨ Manual shifting, moving first element to end.
+
+// function leftShiftByOne(arr) {
+//     let n = arr.length
+//     let last = arr[0]
+
+//     for (let i = 0; i < n; i++) {
+//         arr[i] = arr[i + 1]
+//     }
+
+//     arr[n - 1] = last
+
+//     return arr
+// }
+// console.log(leftShiftByOne([1, 2, 3, 4]))
+
+
+// 1️⃣2️⃣ Count How Many Times an Element Appears in an Array
+// Input: array = [1, 4, 4, 4, 2], element = 4
+// Output: 3
+
+// function freq(arr, target) {
+// with map
+// const map = new Map()
+// for (let i of arr) {
+//     map.set(i, (map.get(i) || 0) + 1)
+// }
+// return map.get(target) || 0;
+
+// without map
+// let count = 0;
+// for (let i of arr) {
+//     if (i === target) count++
+// }
+// return count;
+// }
+
+// console.log(freq([1, 4, 4, 4, 2], 4))
+
+
+
+// ! INTERMEDIATE  QUESTIONS
 
 
 

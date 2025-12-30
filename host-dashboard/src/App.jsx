@@ -6,6 +6,8 @@ import StatsPanel from "./components/StatsPanel";
 import LiveAnswers from "./components/LiveAnswers";
 import LeaderboardPanel from "./components/LeaderboardPanel";
 import QuestionManager from "./components/QuestionManager";
+import CurrentQuestion from "./components/CurrentQuestion";
+import Toast from "./components/Toast";
 import "./styles/App.css";
 
 function hostReducer(state, action) {
@@ -33,20 +35,35 @@ function hostReducer(state, action) {
         ...state,
         gameState: { ...state.gameState, status: "active" },
         currentQuestion: action.payload.questionNumber,
+        currentQuestionData: action.payload.question,
         answerStats: [],
+        showLeaderboardCountdown: false,
+      };
+
+    case "QUESTION_ENDED":
+      return {
+        ...state,
+        gameState: { ...state.gameState, status: "waiting" },
+        questionResults: action.payload.results,
+        leaderboard: action.payload.leaderboard,
+        currentQuestionData: null,
+        showLeaderboardCountdown: true,
+      };
+
+    case "GAME_ENDED":
+      return {
+        ...state,
+        gameState: { status: "waiting" },
+        currentQuestion: 0,
+        currentQuestionData: null,
+        answerStats: [],
+        questionResults: null,
       };
 
     case "ANSWER_SUBMITTED":
       return {
         ...state,
         answerStats: [...state.answerStats, action.payload],
-      };
-
-    case "QUESTION_ENDED":
-      return {
-        ...state,
-        questionResults: action.payload.results,
-        leaderboard: action.payload.leaderboard,
       };
 
     case "LEADERBOARD_UPDATE":
@@ -62,11 +79,13 @@ const initialState = {
   gameState: null,
   participantCount: 0,
   currentQuestion: 0,
+  currentQuestionData: null,
   totalQuestions: 10,
   recentJoins: [],
   answerStats: [],
   questionResults: null,
   leaderboard: null,
+  showLeaderboardCountdown: false,
 };
 
 function App() {
@@ -74,6 +93,11 @@ function App() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [customQuestions, setCustomQuestions] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard"); // "dashboard" or "questions"
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "info",
+  });
 
   useEffect(() => {
     socketService.connect();
@@ -86,6 +110,13 @@ function App() {
       dispatch({ type: "HOST_CONNECTED", payload: data });
       if (!data.gameState || data.gameState.status !== "active") {
         setCurrentQuestionIndex(0);
+        // Reset game state if not active
+        if (data.gameState && data.gameState.status !== "active") {
+          dispatch({
+            type: "QUESTION_ENDED",
+            payload: { results: null, leaderboard: null },
+          });
+        }
       }
     });
 
@@ -99,6 +130,28 @@ function App() {
 
     socketService.on("question_started", (data) => {
       dispatch({ type: "QUESTION_STARTED", payload: data });
+
+      // Update currentQuestionIndex to the next question index (0-based)
+      // questionNumber is 1-based, so questionNumber 3 means we're on question 3 (index 2)
+      // Next question would be question 4 (index 3), so we set index to questionNumber
+      if (data.questionNumber) {
+        setCurrentQuestionIndex(data.questionNumber); // This is the index for the NEXT question
+      }
+
+      // Show toast notification
+      if (data.questionNumber === 1) {
+        setToast({
+          show: true,
+          message: "🎮 Game Started!",
+          type: "success",
+        });
+      } else {
+        setToast({
+          show: true,
+          message: `📝 Question ${data.questionNumber} Started`,
+          type: "info",
+        });
+      }
     });
 
     socketService.on("answer_submitted", (data) => {
@@ -115,6 +168,9 @@ function App() {
 
     socketService.on("game_ended", () => {
       setCurrentQuestionIndex(0);
+      dispatch({
+        type: "GAME_ENDED",
+      });
     });
 
     return () => {
@@ -123,10 +179,23 @@ function App() {
   }, []);
 
   const handleStartQuestion = () => {
-    socketService.emit("start_question", {
-      questionIndex: currentQuestionIndex,
+    // Calculate the next question index based on current state
+    // state.currentQuestion is 1-based (question number), so if we're on question 3,
+    // we want to start question 4, which is at index 3 (0-based)
+    // So we use state.currentQuestion directly as the next index
+    const nextQuestionIndex = state.currentQuestion || currentQuestionIndex;
+
+    console.log("Starting question:", {
+      currentQuestion: state.currentQuestion,
+      currentQuestionIndex,
+      nextQuestionIndex,
     });
-    setCurrentQuestionIndex((prev) => prev + 1);
+
+    socketService.emit("start_question", {
+      questionIndex: nextQuestionIndex, // 0-based index for the next question
+    });
+    // Don't increment here - let the question_started event update it
+    // This prevents double-increment when auto-advance happens
   };
 
   const handleEndQuestion = () => {
@@ -171,6 +240,13 @@ function App() {
         </button>
       </div>
 
+      <Toast
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
+
       {activeTab === "dashboard" ? (
         <div className="dashboard-content">
           <div className="main-panel">
@@ -185,6 +261,13 @@ function App() {
               canStartNext={currentQuestionIndex < state.totalQuestions}
             />
 
+            {state.currentQuestionData && (
+              <CurrentQuestion
+                question={state.currentQuestionData}
+                questionNumber={state.currentQuestion}
+              />
+            )}
+
             <StatsPanel
               participantCount={state.participantCount}
               answerCount={state.answerStats.length}
@@ -197,7 +280,13 @@ function App() {
           </div>
 
           <div className="side-panel">
-            <LeaderboardPanel leaderboard={state.leaderboard} />
+            <LeaderboardPanel
+              leaderboard={state.leaderboard}
+              showCountdown={
+                state.showLeaderboardCountdown &&
+                state.currentQuestion < state.totalQuestions
+              }
+            />
           </div>
         </div>
       ) : (

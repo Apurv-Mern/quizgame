@@ -1,6 +1,32 @@
+import { useState, useEffect } from "react";
 import "./Leaderboard.css";
 
-function Leaderboard({ data, showFinalMessage }) {
+function Leaderboard({ data, showFinalMessage, questionNumber, totalQuestions }) {
+  const [countdown, setCountdown] = useState(5);
+  const showCountdown = !showFinalMessage && questionNumber && totalQuestions && questionNumber < totalQuestions;
+
+  useEffect(() => {
+    if (showCountdown && countdown > 0) {
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    } else if (showCountdown && countdown === 0) {
+      setCountdown(5);
+    }
+  }, [showCountdown, countdown]);
+
+  useEffect(() => {
+    if (showCountdown) {
+      setCountdown(5);
+    }
+  }, [questionNumber, showCountdown]);
+
   if (!data?.top10 || data.top10.length === 0) {
     return (
       <div className="leaderboard">
@@ -54,6 +80,13 @@ function Leaderboard({ data, showFinalMessage }) {
         <div className="total-players">
           {data.totalParticipants} players competing
         </div>
+
+        {showCountdown && countdown > 0 && (
+          <div className="countdown-timer">
+            <div className="countdown-label">Next question in:</div>
+            <div className="countdown-value">{countdown}s</div>
+          </div>
+        )}
       </div>
     </div>
   );

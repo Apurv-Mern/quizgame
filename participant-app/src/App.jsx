@@ -219,6 +219,8 @@ function App() {
           results={state.questionResults}
           leaderboard={state.leaderboard}
           participant={state.participant}
+          questionNumber={state.questionNumber}
+          totalQuestions={state.totalQuestions}
         />
       )}
 

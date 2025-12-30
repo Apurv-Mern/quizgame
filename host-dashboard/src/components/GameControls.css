@@ -26,6 +26,43 @@
   border-radius: 6px;
 }
 
+.timer-display {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+}
+
+.timer-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+}
+
+.timer-value {
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: all 0.3s;
+}
+
+.timer-value.timer-warning {
+  color: #fef3c7;
+  animation: pulse-warning 1s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
 .controls-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

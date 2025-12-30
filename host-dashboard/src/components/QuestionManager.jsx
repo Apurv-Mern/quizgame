@@ -9,19 +9,19 @@ function QuestionManager({ onQuestionsUpdate }) {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState(null);
-  const [commonTimeLimit, setCommonTimeLimit] = useState(30);
+  const COMMON_TIME_LIMIT = 30; // Fixed 30 seconds for all questions
 
   // Load existing questions or initialize with empty ones
   useEffect(() => {
     // If staticQuestions exist, use them for initialization
     if (staticQuestions && staticQuestions.length > 0) {
-      setQuestions(staticQuestions);
+      // Ensure all questions have 30 second time limit
+      const questionsWithFixedTime = staticQuestions.map((q) => ({
+        ...q,
+        timeLimit: COMMON_TIME_LIMIT,
+      }));
+      setQuestions(questionsWithFixedTime);
       setLoading(false);
-      // Set initial common timer if all questions have same timeLimit
-      const allSame = staticQuestions.every(
-        (q) => q.timeLimit === staticQuestions[0].timeLimit
-      );
-      setCommonTimeLimit(allSame ? staticQuestions[0].timeLimit : 30);
     } else {
       loadQuestions();
     }
@@ -52,18 +52,14 @@ function QuestionManager({ onQuestionsUpdate }) {
             clue3: "",
           });
         }
-        // Ensure clues exist for all loaded questions
+        // Ensure clues exist for all loaded questions and set time limit to 30
         loadedQuestions.forEach((q) => {
           q.clue1 = q.clue1 || "";
           q.clue2 = q.clue2 || "";
           q.clue3 = q.clue3 || "";
+          q.timeLimit = COMMON_TIME_LIMIT;
         });
         setQuestions(loadedQuestions.slice(0, 10));
-        // Set initial common timer if all questions have same timeLimit
-        const allSame = loadedQuestions.every(
-          (q) => q.timeLimit === loadedQuestions[0].timeLimit
-        );
-        setCommonTimeLimit(allSame ? loadedQuestions[0].timeLimit : 30);
       } else {
         // Initialize with empty questions
         const initialQuestions = Array.from({ length: 10 }, (_, i) => ({
@@ -82,7 +78,6 @@ function QuestionManager({ onQuestionsUpdate }) {
           clue3: "",
         }));
         setQuestions(initialQuestions);
-        setCommonTimeLimit(30);
       }
     } catch (error) {
       console.error("Failed to load questions:", error);
@@ -97,13 +92,12 @@ function QuestionManager({ onQuestionsUpdate }) {
           { id: "d", text: "" },
         ],
         correctAnswer: "a",
-        timeLimit: 30,
+        timeLimit: COMMON_TIME_LIMIT,
         clue1: "",
         clue2: "",
         clue3: "",
       }));
       setQuestions(initialQuestions);
-      setCommonTimeLimit(30);
     } finally {
       setLoading(false);
     }
@@ -156,8 +150,13 @@ function QuestionManager({ onQuestionsUpdate }) {
       setSaving(true);
       setMessage(null);
 
-      // Filter only complete questions
-      const completeQuestions = questions.filter(isQuestionComplete);
+      // Filter only complete questions and ensure all have 30 second time limit
+      const completeQuestions = questions
+        .filter(isQuestionComplete)
+        .map((q) => ({
+          ...q,
+          timeLimit: COMMON_TIME_LIMIT,
+        }));
 
       if (completeQuestions.length === 0) {
         setMessage({ type: "error", text: "No complete questions to save" });
@@ -204,23 +203,6 @@ function QuestionManager({ onQuestionsUpdate }) {
         <div className="progress-badge">
           {getCompletedCount()} / 14 Complete
         </div>
-      </div>
-
-      {/* Common timer for all questions */}
-      <div className="form-group" style={{ margin: "1em 0" }}>
-        <label style={{ fontWeight: "bold", marginRight: 8 }}>
-          Common Time Limit (seconds):
-        </label>
-        <select
-          value={commonTimeLimit}
-          onChange={(e) => setCommonTimeLimit(Number(e.target.value))}
-          style={{ width: 120 }}
-        >
-          <option value={15}>15 seconds</option>
-          <option value={30}>30 seconds</option>
-          <option value={45}>45 seconds</option>
-          <option value={60}>60 seconds</option>
-        </select>
       </div>
 
       {message && (
@@ -362,16 +344,16 @@ function QuestionManager({ onQuestionsUpdate }) {
                   </div>
                 </div>
 
-                <div className="form-group">
+                {/* <div className="form-group">
                   <label>Time Limit (seconds)</label>
                   <input
                     type="text"
-                    value={commonTimeLimit}
+                    value={COMMON_TIME_LIMIT}
                     readOnly
                     disabled
                     style={{ width: 120 }}
                   />
-                </div>
+                </div> */}
               </div>
             )}
           </div>

@@ -155,6 +155,39 @@
   margin-top: 2rem;
 }
 
+.countdown-timer {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  text-align: center;
+  color: white;
+  animation: pulse-countdown 1s ease-in-out infinite;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+.countdown-label {
+  font-size: 1.5rem;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-bottom: 1rem;
+}
+
+.countdown-value {
+  font-size: 4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes pulse-countdown {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
 .empty-message {
   text-align: center;
   font-size: 2rem;
