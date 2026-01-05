@@ -5,7 +5,7 @@
 
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'https://interactivequiz-webapp-backend.24livehost.com:3015';
 
 // Create axios instance with default config
 const apiClient = axios.create({

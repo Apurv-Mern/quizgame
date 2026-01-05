@@ -7,4 +7,6 @@ export default defineConfig({
         port: 3003,
         host: true
     }
+    ,
+    base: '/big-screen/',
 })

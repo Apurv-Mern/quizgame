@@ -7,4 +7,6 @@ export default defineConfig({
         port: 3002,
         host: true
     }
+    ,
+    base: '/host-dashboard/',
 })
