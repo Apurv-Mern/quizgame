@@ -37,23 +37,12 @@ function App() {
     socketService.on("current_question", (data) => {
       setCurrentQuestion(data.question);
       setScreen("question");
-
-      // Auto-switch to leaderboard after question time + 5s buffer
-      setTimeout(() => {
-        setScreen("leaderboard");
-      }, (data.question.timeLimit + 5) * 1000);
     });
 
     socketService.on("leaderboard_update", (data) => {
       setLeaderboard(data);
-      setScreen((currentScreen) => {
-        // Only switch to leaderboard if currently showing a question (after it ends)
-        // Don't switch if on waiting screen or game ended screen
-        if (currentScreen === "question") {
-          return "leaderboard";
-        }
-        return currentScreen;
-      });
+      // Leaderboard updates do not automatically change screen
+      // Screen changes are controlled by explicit events like show_correct_answer
     });
 
     socketService.on("new_question", (data) => {
@@ -67,14 +56,6 @@ function App() {
       console.log("🏁 Game ended, showing final leaderboard");
       setLeaderboard(data.leaderboard);
       setScreen("gameEnded");
-
-      // After 1 minute, return to waiting screen
-      setTimeout(() => {
-        console.log("⏰ Timeout reached, returning to waiting screen");
-        setScreen("waiting");
-        setLeaderboard(null);
-        setCurrentQuestion(null);
-      }, 60000); // 60 seconds = 1 minute
     });
 
     socketService.on("show_correct_answer", (data) => {

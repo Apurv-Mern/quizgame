@@ -1,31 +1,14 @@
-import { useState, useEffect } from "react";
 import "./ResultsView.css";
 
-function ResultsView({ results, leaderboard, participant, questionNumber, totalQuestions }) {
-  const [countdown, setCountdown] = useState(5);
-  const showCountdown = questionNumber && totalQuestions && questionNumber < totalQuestions;
-
-  useEffect(() => {
-    if (showCountdown && countdown > 0) {
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    } else if (showCountdown && countdown === 0) {
-      setCountdown(5);
-    }
-  }, [showCountdown, countdown]);
-
-  useEffect(() => {
-    if (showCountdown) {
-      setCountdown(5);
-    }
-  }, [questionNumber, showCountdown]);
+function ResultsView({
+  results,
+  leaderboard,
+  participant,
+  questionNumber,
+  totalQuestions,
+}) {
+  const showNextMessage =
+    questionNumber && totalQuestions && questionNumber < totalQuestions;
 
   if (!results) return null;
 
@@ -108,13 +91,10 @@ function ResultsView({ results, leaderboard, participant, questionNumber, totalQ
           </div>
         )}
 
-        {showCountdown && countdown > 0 ? (
-          <div className="countdown-timer">
-            <div className="countdown-label">Next question in:</div>
-            <div className="countdown-value">{countdown}s</div>
+        {showNextMessage && (
+          <div className="next-question-message">
+            Waiting for host to start next question...
           </div>
-        ) : (
-          <div className="next-question-message">Next question coming...</div>
         )}
       </div>
     </div>

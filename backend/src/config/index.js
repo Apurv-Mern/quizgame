@@ -9,13 +9,6 @@ module.exports = {
         corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000'
     },
 
-    database: {
-        host: process.env.DB_HOST || 'localhost',
-        user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || '',
-        name: process.env.DB_NAME || 'quiz'
-    },
-
     game: {
         maxParticipants: parseInt(process.env.MAX_PARTICIPANTS) || 300,
         questionTimeLimit: parseInt(process.env.QUESTION_TIME_LIMIT) || 30, // seconds

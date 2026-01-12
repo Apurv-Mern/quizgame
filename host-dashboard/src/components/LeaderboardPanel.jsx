@@ -1,32 +1,6 @@
-import { useState, useEffect } from "react";
 import "./LeaderboardPanel.css";
 
-function LeaderboardPanel({ leaderboard, showCountdown = false, onCountdownComplete }) {
-  const [countdown, setCountdown] = useState(showCountdown ? 5 : 0);
-
-  useEffect(() => {
-    if (showCountdown && countdown > 0) {
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            onCountdownComplete?.();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    } else if (showCountdown && countdown === 0) {
-      setCountdown(5);
-    }
-  }, [showCountdown, countdown, onCountdownComplete]);
-
-  useEffect(() => {
-    if (showCountdown) {
-      setCountdown(5);
-    }
-  }, [showCountdown]);
-
+function LeaderboardPanel({ leaderboard }) {
   if (!leaderboard?.top10 || leaderboard.top10.length === 0) {
     return (
       <div className="leaderboard-panel">
@@ -47,13 +21,6 @@ function LeaderboardPanel({ leaderboard, showCountdown = false, onCountdownCompl
           {leaderboard.totalParticipants} players
         </div>
       </div>
-
-      {showCountdown && countdown > 0 && (
-        <div className="countdown-timer">
-          <div className="countdown-label">Next question in:</div>
-          <div className="countdown-value">{countdown}s</div>
-        </div>
-      )}
 
       <div className="leaderboard-list">
         {leaderboard.top10.map((player) => (

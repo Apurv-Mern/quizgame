@@ -1,8 +1,7 @@
-// Static questions with clues for host dashboard
-// ⚠️ IMPORTANT: This file is copied from ../../../shared-questions.js
-// To update questions, edit shared-questions.js at the root of the project
+// Shared questions file - Single source of truth for all applications
+// Use this file in backend, host-dashboard, and anywhere else questions are needed
 
-export const staticQuestions = [
+const questions = [
     {
         id: 'q1',
         text: 'Ancient City Infrastructure',
@@ -144,3 +143,10 @@ export const staticQuestions = [
         timeLimit: 30
     }
 ];
+
+// Export for both CommonJS (Node.js backend) and ES6 modules (Vite frontend)
+module.exports = { questions };
+// Also support ES6 import if running in a module environment
+if (typeof exports !== 'undefined') {
+    exports.questions = questions;
+}

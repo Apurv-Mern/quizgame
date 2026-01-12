@@ -11,6 +11,8 @@ function QuestionView({
   onAnswerSelect,
   onAnswerSubmit,
 }) {
+  const [visibleHints, setVisibleHints] = useState([1]); // Start with hint 1 visible
+
   const getAnswerClass = (optionId) => {
     if (answerSubmitted && selectedAnswer === optionId) {
       if (answerResult?.success) {
@@ -49,6 +51,33 @@ function QuestionView({
     return () => clearInterval(timer);
   }, [question, answerSubmitted]);
 
+  // Reset visible hints when new question starts
+  useEffect(() => {
+    setVisibleHints([1]);
+    setTimeRemaining(question?.timeLimit || 30);
+  }, [question]);
+
+  // Listen for hint reveal events from backend
+  useEffect(() => {
+    // Import socket service dynamically
+    import("../services/socket").then(({ default: socketService }) => {
+      const handleReveal = (data) => {
+        setVisibleHints((prev) => {
+          if (!prev.includes(data.hintNumber)) {
+            return [...prev, data.hintNumber];
+          }
+          return prev;
+        });
+      };
+
+      socketService.on("reveal_hint", handleReveal);
+
+      return () => {
+        socketService.off("reveal_hint", handleReveal);
+      };
+    });
+  }, []);
+
   return (
     <div className="question-view">
       <div className="question-status-bar">
@@ -67,9 +96,15 @@ function QuestionView({
         <div className="clues-section">
           <div className="clues-label">Clues:</div>
           <ul className="clues-list">
-            {question.clue1 && <li className="clue-item">{question.clue1}</li>}
-            {question.clue2 && <li className="clue-item">{question.clue2}</li>}
-            {question.clue3 && <li className="clue-item">{question.clue3}</li>}
+            {question.clue1 && visibleHints.includes(1) && (
+              <li className="clue-item">{question.clue1}</li>
+            )}
+            {question.clue2 && visibleHints.includes(2) && (
+              <li className="clue-item">{question.clue2}</li>
+            )}
+            {question.clue3 && visibleHints.includes(3) && (
+              <li className="clue-item">{question.clue3}</li>
+            )}
           </ul>
         </div>
 

@@ -71,9 +71,11 @@ function setupSocketHandlers(io) {
                     correctAnswer: prevQ.correctAnswer
                 });
                 // Start the next question immediately (no delay)
-                const result = gameService.startQuestion(questionIndex, () => {
-                    handleQuestionEnd(io);
-                });
+                const result = gameService.startQuestion(
+                    questionIndex,
+                    () => handleQuestionEnd(io),
+                    (hintNumber) => handleHintReveal(io, hintNumber)
+                );
                 if (result.success) {
                     // Get question with correct answer for host
                     const currentQ = gameService.currentQuestion;
@@ -84,7 +86,7 @@ function setupSocketHandlers(io) {
                         correctAnswer: currentQ.correctAnswer,
                         timeLimit: currentQ.timeLimit
                     } : null;
-                    
+
                     socket.emit('question_started', {
                         success: true,
                         questionNumber: result.questionNumber,
@@ -108,9 +110,11 @@ function setupSocketHandlers(io) {
                 }
             } else {
                 // No previous question, just start as normal
-                const result = gameService.startQuestion(questionIndex, () => {
-                    handleQuestionEnd(io);
-                });
+                const result = gameService.startQuestion(
+                    questionIndex,
+                    () => handleQuestionEnd(io),
+                    (hintNumber) => handleHintReveal(io, hintNumber)
+                );
                 if (result.success) {
                     // Get question with correct answer for host
                     const currentQ = gameService.currentQuestion;
@@ -121,7 +125,7 @@ function setupSocketHandlers(io) {
                         correctAnswer: currentQ.correctAnswer,
                         timeLimit: currentQ.timeLimit
                     } : null;
-                    
+
                     socket.emit('question_started', {
                         success: true,
                         questionNumber: result.questionNumber,
@@ -306,6 +310,15 @@ function setupSocketHandlers(io) {
     });
 
     /**
+     * Helper: Handle hint reveal
+     */
+    function handleHintReveal(io, hintNumber) {
+        io.to('participants').emit('reveal_hint', { hintNumber });
+        io.to('display').emit('reveal_hint', { hintNumber });
+        console.log(`💡 Hint ${hintNumber} revealed to all clients`);
+    }
+
+    /**
      * Helper: Handle question end
      */
     function handleQuestionEnd(io) {
@@ -320,6 +333,15 @@ function setupSocketHandlers(io) {
                 results: endResult.results,
                 leaderboard
             });
+
+            // Send correct answer to display screen
+            const currentQ = gameService.currentQuestion;
+            if (currentQ) {
+                io.to('display').emit('show_correct_answer', {
+                    question: currentQ.toClientFormat(),
+                    correctAnswer: currentQ.correctAnswer
+                });
+            }
 
             // Send results to participants (with personal rank)
             const participants = Array.from(gameService.participants.values());
@@ -343,50 +365,8 @@ function setupSocketHandlers(io) {
             // Broadcast leaderboard update
             io.emit('leaderboard_update', leaderboard);
 
-            // Auto-start next question after 5 seconds
-            const nextQuestionIndex = gameService.currentQuestionIndex + 1;
-            if (nextQuestionIndex < gameService.questions.length) {
-                setTimeout(() => {
-                    // Check if game is still active (not ended by host)
-                    // After question ends, status is 'waiting', so we check if it's not 'ended'
-                    if (gameService.gameStatus !== 'ended') {
-                        const result = gameService.startQuestion(nextQuestionIndex, () => {
-                            handleQuestionEnd(io);
-                        });
-                        
-                        if (result.success) {
-                            // Get question with correct answer for host
-                            const currentQ = gameService.currentQuestion;
-                            const questionWithAnswer = currentQ ? {
-                                id: currentQ.id,
-                                text: currentQ.text,
-                                options: currentQ.options,
-                                correctAnswer: currentQ.correctAnswer,
-                                timeLimit: currentQ.timeLimit
-                            } : null;
-
-                            // Find host socket and emit
-                            io.to('host').emit('question_started', {
-                                success: true,
-                                questionNumber: result.questionNumber,
-                                question: questionWithAnswer
-                            });
-
-                            io.to('participants').emit('new_question', {
-                                question: result.question,
-                                questionNumber: result.questionNumber,
-                                totalQuestions: result.totalQuestions
-                            });
-
-                            io.to('display').emit('new_question', {
-                                question: result.question,
-                                questionNumber: result.questionNumber,
-                                totalQuestions: result.totalQuestions
-                            });
-                        }
-                    }
-                }, 5000); // 5 second delay
-            }
+            // DO NOT auto-start next question - host must manually advance
+            console.log('⏸️  Question ended. Waiting for host to start next question.');
         }
     }
 

@@ -12,8 +12,6 @@ const compression = require('compression');
 require('dotenv').config();
 
 const config = require('./src/config');
-const { initializeDatabase, testConnection, syncModels } = require('./src/config/sequelize');
-const { initializeModels } = require('./src/models');
 const setupSocketHandlers = require('./src/socket');
 const gameService = require('./src/services/gameService');
 
@@ -124,39 +122,15 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Internal server error' });
 });
 
-// Initialize database and start server
-async function startServer() {
-    try {
-        // Initialize Sequelize
-        initializeDatabase();
-
-        // Test connection
-        const isConnected = await testConnection();
-
-        if (!isConnected) {
-            console.warn('⚠️  Database connection failed, running in memory-only mode');
-        } else {
-            // Initialize models
-            initializeModels();
-            console.log('✅ Models initialized');
-
-            // Sync models (creates/updates tables)
-            await syncModels();
-            console.log('✅ Database ready');
-        }
-
-        // Start server
-        const PORT = process.env.PORT || 3001;
-        server.listen(PORT, () => {
-            console.log(`🚀 Server running on port ${PORT}`);
-            console.log(`📊 Max participants: ${config.game.maxParticipants}`);
-            console.log(`⏱️  Question time limit: ${config.game.questionTimeLimit}s`);
-            console.log(`🎮 Game initialized and ready`);
-        });
-    } catch (error) {
-        console.error('❌ Failed to start server:', error);
-        process.exit(1);
-    }
+// Start server
+function startServer() {
+    const PORT = process.env.PORT || 3001;
+    server.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+        console.log(`📊 Max participants: ${config.game.maxParticipants}`);
+        console.log(`⏱️  Question time limit: ${config.game.questionTimeLimit}s`);
+        console.log(`🎮 Game initialized and ready`);
+    });
 }
 
 startServer();
@@ -164,8 +138,6 @@ startServer();
 // Graceful shutdown
 process.on('SIGTERM', async () => {
     console.log('SIGTERM signal received: closing server');
-    const { closeConnection } = require('./src/config/sequelize');
-    await closeConnection();
     server.close(() => {
         console.log('Server closed');
         process.exit(0);

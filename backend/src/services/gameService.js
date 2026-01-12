@@ -6,7 +6,6 @@
 const Participant = require('../models/Participant');
 const Question = require('../models/Question');
 const { loadQuestions } = require('../utils/questionBank');
-const questionsRepository = require('../repositories/questionsRepository');
 const config = require('../config');
 
 class GameService {
@@ -35,26 +34,11 @@ class GameService {
     }
 
     /**
-     * Load initial questions from database or fallback to default
+     * Load initial questions from question bank
      */
-    async loadInitialQuestions() {
-        try {
-            const dbQuestions = await questionsRepository.loadQuestions();
-            if (dbQuestions.length > 0) {
-                this.questions = dbQuestions.map(q =>
-                    new Question(q.id, q.text, q.options, q.correctAnswer, q.timeLimit)
-                );
-                console.log(`✅ Loaded ${this.questions.length} questions from database`);
-            } else {
-                // Fallback to default questions
-                this.questions = loadQuestions();
-                console.log(`✅ Loaded ${this.questions.length} default questions`);
-            }
-        } catch (error) {
-            console.warn('⚠️  Database not available, using default questions');
-            this.questions = loadQuestions();
-            console.log(`✅ Loaded ${this.questions.length} default questions`);
-        }
+    loadInitialQuestions() {
+        this.questions = loadQuestions();
+        console.log(`✅ Loaded ${this.questions.length} questions from question bank`);
     }
 
     /**
@@ -148,14 +132,20 @@ class GameService {
     /**
      * Start a question
      */
-    startQuestion(questionIndex, onQuestionEnd) {
+    startQuestion(questionIndex, onQuestionEnd, onHintReveal) {
         if (questionIndex >= this.questions.length) {
             return { success: false, error: 'No more questions' };
         }
 
-        // Clear any existing timer
+        // Clear any existing timers
         if (this.questionTimer) {
             clearTimeout(this.questionTimer);
+        }
+        if (this.hint2Timer) {
+            clearTimeout(this.hint2Timer);
+        }
+        if (this.hint3Timer) {
+            clearTimeout(this.hint3Timer);
         }
 
         this.currentQuestionIndex = questionIndex;
@@ -166,11 +156,24 @@ class GameService {
 
         console.log(`📝 Started question ${questionIndex + 1}: ${this.currentQuestion.text}`);
 
-        // Set timer to auto-end question
+        // Set timer to reveal hint 2 at 12 seconds
+        this.hint2Timer = setTimeout(() => {
+            console.log(`💡 Revealing hint 2 for question ${questionIndex + 1}`);
+            if (onHintReveal) onHintReveal(2);
+        }, 12000);
+
+        // Set timer to reveal hint 3 at 22 seconds
+        this.hint3Timer = setTimeout(() => {
+            console.log(`💡 Revealing hint 3 for question ${questionIndex + 1}`);
+            if (onHintReveal) onHintReveal(3);
+        }, 22000);
+
+        // Set timer to auto-end question at 30 seconds
         this.questionTimer = setTimeout(() => {
+            console.log(`⏰ Auto-ending question ${questionIndex + 1} at 30 seconds`);
             this.endQuestion();
             if (onQuestionEnd) onQuestionEnd();
-        }, this.currentQuestion.timeLimit * 1000);
+        }, 30000);
 
         return {
             success: true,
@@ -192,9 +195,18 @@ class GameService {
         // Set status to 'waiting' after question ends (before next question starts)
         this.gameStatus = 'waiting';
 
+        // Clear all timers
         if (this.questionTimer) {
             clearTimeout(this.questionTimer);
             this.questionTimer = null;
+        }
+        if (this.hint2Timer) {
+            clearTimeout(this.hint2Timer);
+            this.hint2Timer = null;
+        }
+        if (this.hint3Timer) {
+            clearTimeout(this.hint3Timer);
+            this.hint3Timer = null;
         }
 
         console.log(`⏹️  Ended question ${this.currentQuestionIndex + 1}`);
@@ -494,14 +506,7 @@ class GameService {
 
             // Replace questions in memory
             this.questions = validQuestions;
-
-            // Save to database
-            try {
-                await questionsRepository.saveQuestions(validQuestions);
-                console.log(`✅ Saved ${validQuestions.length} custom questions to database`);
-            } catch (dbError) {
-                console.warn('⚠️  Failed to save to database, using memory only:', dbError.message);
-            }
+            console.log(`✅ Loaded ${validQuestions.length} custom questions`);
 
             return {
                 success: true,
@@ -519,20 +524,7 @@ class GameService {
     /**
      * Get all questions (for host dashboard)
      */
-    async getQuestions() {
-        // Try to load from database first
-        try {
-            const dbQuestions = await questionsRepository.loadQuestions();
-            if (dbQuestions.length > 0) {
-                // Convert to Question instances
-                this.questions = dbQuestions.map(q =>
-                    new Question(q.id, q.text, q.options, q.correctAnswer, q.timeLimit)
-                );
-            }
-        } catch (error) {
-            console.warn('⚠️  Failed to load from database, using memory:', error.message);
-        }
-
+    getQuestions() {
         return this.questions;
     }
 

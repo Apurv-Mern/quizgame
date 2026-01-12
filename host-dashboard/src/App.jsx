@@ -280,13 +280,7 @@ function App() {
           </div>
 
           <div className="side-panel">
-            <LeaderboardPanel
-              leaderboard={state.leaderboard}
-              showCountdown={
-                state.showLeaderboardCountdown &&
-                state.currentQuestion < state.totalQuestions
-              }
-            />
+            <LeaderboardPanel leaderboard={state.leaderboard} />
           </div>
         </div>
       ) : (
